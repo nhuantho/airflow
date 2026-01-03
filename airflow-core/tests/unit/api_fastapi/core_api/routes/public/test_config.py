@@ -60,7 +60,7 @@ MOCK_CONFIG_DICT = {
         OPTION_KEY_SMTP_PASSWORD: OPTION_VALUE_SMTP_PASSWORD,
     },
     SECTION_DATABASE: {
-        OPTION_KEY_SQL_ALCHEMY_CONN: OPTION_VALUE_SQL_ALCHEMY_CONN,
+        OPTION_KEY_SQL_ALCHEMY_CONN: OPTION_VALUE_SENSITIVE_HIDDEN,
     },
 }
 MOCK_CONFIG_DICT_SENSITIVE_HIDDEN = {
@@ -108,7 +108,7 @@ GET_CONFIG_ALL_JSON_RESPONSE = {
         {
             "name": SECTION_DATABASE,
             "options": [
-                {"key": OPTION_KEY_SQL_ALCHEMY_CONN, "value": OPTION_VALUE_SQL_ALCHEMY_CONN},
+                {"key": OPTION_KEY_SQL_ALCHEMY_CONN, "value": OPTION_VALUE_SENSITIVE_HIDDEN},
             ],
         },
     ],
@@ -213,7 +213,7 @@ class TestGetConfig(TestConfigEndpoint):
                     {OPTION_KEY_SMTP_PASSWORD} = {OPTION_VALUE_MARKED}
 
                     [{SECTION_DATABASE}]
-                    {OPTION_KEY_SQL_ALCHEMY_CONN} = {OPTION_VALUE_SQL_ALCHEMY_CONN}
+                    {OPTION_KEY_SQL_ALCHEMY_CONN} = {OPTION_VALUE_SENSITIVE_HIDDEN}
                     """
                 ),
             ),
@@ -260,7 +260,7 @@ class TestGetConfig(TestConfigEndpoint):
                         {
                             "name": SECTION_DATABASE,
                             "options": [
-                                {"key": OPTION_KEY_SQL_ALCHEMY_CONN, "value": OPTION_VALUE_SQL_ALCHEMY_CONN},
+                                {"key": OPTION_KEY_SQL_ALCHEMY_CONN, "value": OPTION_VALUE_SENSITIVE_HIDDEN},
                             ],
                         },
                     ],
