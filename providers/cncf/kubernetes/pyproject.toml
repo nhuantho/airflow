@@ -88,6 +88,7 @@ dependencies = [
     "urllib3>=2.1.0,!=2.6.0",
     # the version is limited to the next MAJOR version and should by synced with the kubernetes version
     "kubernetes_asyncio>=32.0.0,<37.0.0",
+    "kubeflow-spark-api==2.4.0",
 ]
 
 [dependency-groups]

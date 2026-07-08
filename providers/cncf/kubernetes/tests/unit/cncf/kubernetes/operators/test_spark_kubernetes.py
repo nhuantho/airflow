@@ -30,6 +30,18 @@ import pendulum
 import pytest
 import pytest_asyncio
 import yaml
+from kubeflow_spark_api.models import (
+    IoK8sApiCoreV1Affinity,
+    IoK8sApiCoreV1EnvVar,
+    IoK8sApiCoreV1HostPathVolumeSource,
+    IoK8sApiCoreV1Volume,
+    IoK8sApimachineryPkgApisMetaV1ObjectMeta,
+    SparkV1beta2DriverSpec,
+    SparkV1beta2ExecutorSpec,
+    SparkV1beta2RestartPolicy,
+    SparkV1beta2SparkApplication,
+    SparkV1beta2SparkApplicationSpec,
+)
 from kubernetes.client import models as k8s
 
 from airflow import DAG
@@ -122,6 +134,63 @@ def _get_expected_k8s_dict():
     }
 
 
+def _get_expected_spark_application() -> SparkV1beta2SparkApplication:
+    return SparkV1beta2SparkApplication(
+        apiVersion="sparkoperator.k8s.io/v1beta2",
+        kind="SparkApplication",
+        metadata=IoK8sApimachineryPkgApisMetaV1ObjectMeta(
+            name="default_yaml_template",
+            namespace="default",
+        ),
+        spec=SparkV1beta2SparkApplicationSpec(
+            type="Python",
+            mode="cluster",
+            image="gcr.io/spark-operator/spark:v2.4.5",
+            image_pull_policy="Always",
+            main_application_file="local:///opt/test.py",
+            spark_version="3.0.0",
+            restart_policy=SparkV1beta2RestartPolicy(type="Never"),
+            python_version="3",
+            volumes=[],
+            image_pull_secrets=[],
+            hadoop_conf={},
+            driver=SparkV1beta2DriverSpec(
+                cores=1,
+                core_limit="1200m",
+                memory="365m",
+                labels={},
+                node_selector={},
+                service_account="default",
+                volume_mounts=[],
+                env=[],
+                env_from=[],
+                tolerations=[],
+                affinity=IoK8sApiCoreV1Affinity(
+                    node_affinity=None,
+                    pod_affinity=None,
+                    pod_anti_affinity=None,
+                ),
+            ),
+            executor=SparkV1beta2ExecutorSpec(
+                cores=1,
+                instances=1,
+                memory="365m",
+                labels={},
+                env=[],
+                env_from=[],
+                node_selector={},
+                volume_mounts=[],
+                tolerations=[],
+                affinity=IoK8sApiCoreV1Affinity(
+                    node_affinity=None,
+                    pod_affinity=None,
+                    pod_anti_affinity=None,
+                ),
+            ),
+        ),
+    )
+
+
 def _get_expected_application_dict_with_labels(task_name="default_yaml"):
     """Create expected application dict with task context labels on-demand."""
     task_context_labels = {
@@ -206,6 +275,68 @@ def _get_expected_application_dict_without_task_context_labels(task_name="defaul
             },
         },
     }
+
+
+def _get_expected_spark_application_without_task_context_labels(
+    task_name="default_yaml", app_name=None
+) -> SparkV1beta2SparkApplication:
+    """Create expected application dict without task context labels (only original file labels)."""
+    original_file_labels = {
+        "version": "2.4.5",
+    }
+    app_name = app_name or task_name
+
+    return SparkV1beta2SparkApplication(
+        apiVersion="sparkoperator.k8s.io/v1beta2",
+        kind="SparkApplication",
+        metadata=IoK8sApimachineryPkgApisMetaV1ObjectMeta(
+            name=app_name,
+            namespace="default",
+        ),
+        spec=SparkV1beta2SparkApplicationSpec(
+            type="Scala",
+            mode="cluster",
+            image="gcr.io/spark-operator/spark:v2.4.5",
+            image_pull_policy="Always",
+            main_class="org.apache.spark.examples.SparkPi",
+            main_application_file="local:///opt/spark/examples/jars/spark-examples_2.11-2.4.5.jar",
+            spark_version="2.4.5",
+            restart_policy=SparkV1beta2RestartPolicy(type="Never"),
+            volumes=[
+                IoK8sApiCoreV1Volume(
+                    name="test-volume",
+                    host_path=IoK8sApiCoreV1HostPathVolumeSource(path="/tmp", type="Directory"),
+                )
+            ],
+            driver=SparkV1beta2DriverSpec(
+                cores=1,
+                core_limit="1200m",
+                memory="512m",
+                labels=original_file_labels.copy(),
+                service_account="spark",
+                volume_mounts=[
+                    IoK8sApiCoreV1Volume(
+                        name="test-volume",
+                        host_path=IoK8sApiCoreV1HostPathVolumeSource(path="/tmp", type="Directory"),
+                    )
+                ],
+                env=[IoK8sApiCoreV1EnvVar(name="SPARK_APPLICATION_NAME", value=app_name)],
+            ),
+            executor=SparkV1beta2ExecutorSpec(
+                cores=1,
+                instances=1,
+                memory="512m",
+                labels=original_file_labels.copy(),
+                volume_mounts=[
+                    IoK8sApiCoreV1Volume(
+                        name="test-volume",
+                        host_path=IoK8sApiCoreV1HostPathVolumeSource(path="/tmp", type="Directory"),
+                    )
+                ],
+                env=[IoK8sApiCoreV1EnvVar(name="SPARK_APPLICATION_NAME", value=app_name)],
+            ),
+        ),
+    )
 
 
 @patch("airflow.providers.cncf.kubernetes.operators.spark_kubernetes.KubernetesHook")
@@ -323,6 +454,7 @@ class TestSparkKubernetesOperatorCreateApplication:
         name=None,
         job_spec=None,
         application_file=None,
+        spark_application=None,
         random_name_suffix=False,
     ):
         op = SparkKubernetesOperator(
@@ -331,6 +463,7 @@ class TestSparkKubernetesOperatorCreateApplication:
             random_name_suffix=random_name_suffix,
             application_file=application_file,
             template_spec=job_spec,
+            spark_application=spark_application,
             kubernetes_conn_id="kubernetes_default_kube_config",
             reattach_on_restart=False,  # Disable reattach for application creation tests
         )
@@ -539,6 +672,44 @@ class TestSparkKubernetesOperatorCreateApplication:
         done_op = self.execute_operator(
             task_name=task_name,
             job_spec=job_spec,
+            random_name_suffix=random_name_suffix,
+        )
+
+        name_normalized = task_name.replace("_", "-")
+        assert isinstance(done_op.name, str)
+        if random_name_suffix:
+            assert done_op.name.startswith(name_normalized)
+        else:
+            assert done_op.name == name_normalized
+
+        expected_dict = _get_expected_k8s_dict()
+        expected_dict["metadata"]["name"] = done_op.name
+        expected_dict["spec"]["driver"]["env"] = [{"name": "SPARK_APPLICATION_NAME", "value": done_op.name}]
+        expected_dict["spec"]["executor"]["env"] = [{"name": "SPARK_APPLICATION_NAME", "value": done_op.name}]
+        mock_create_namespaced_crd.assert_called_with(
+            body=expected_dict,
+            **self.call_commons,
+        )
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("random_name_suffix", [True, False])
+    def test_spark_application(
+        self,
+        mock_create_namespaced_crd,
+        mock_get_namespaced_custom_object_status,
+        mock_cleanup,
+        mock_get_kube_client,
+        mock_create_pod,
+        mock_await_pod_completion,
+        mock_fetch_requested_container_logs,
+        data_file,
+        random_name_suffix,
+    ):
+        task_name = "default_yaml_template"
+        spark_application = _get_expected_spark_application()
+        done_op = self.execute_operator(
+            task_name=task_name,
+            spark_application=spark_application,
             random_name_suffix=random_name_suffix,
         )
 

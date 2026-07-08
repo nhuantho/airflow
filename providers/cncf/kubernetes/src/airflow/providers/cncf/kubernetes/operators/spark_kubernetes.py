@@ -22,6 +22,9 @@ from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
+if TYPE_CHECKING:
+    from kubeflow_spark_api.models import SparkV1beta2SparkApplication
+
 from kubernetes.client import CoreV1Api, CustomObjectsApi, models as k8s
 
 from airflow.providers.cncf.kubernetes import pod_generator
@@ -89,6 +92,7 @@ class SparkKubernetesOperator(KubernetesPodOperator):
         name: str | None = None,
         application_file: str | None = None,
         template_spec=None,
+        spark_application: SparkV1beta2SparkApplication | None = None,
         get_logs: bool = True,
         do_xcom_push: bool = False,
         success_run_history_limit: int = 1,
@@ -105,6 +109,7 @@ class SparkKubernetesOperator(KubernetesPodOperator):
         self.code_path = code_path
         self.application_file = application_file
         self.template_spec = template_spec
+        self.spark_application = spark_application
         self.kubernetes_conn_id = kubernetes_conn_id
         self.startup_timeout_seconds = startup_timeout_seconds
         self.reattach_on_restart = reattach_on_restart
@@ -160,6 +165,8 @@ class SparkKubernetesOperator(KubernetesPodOperator):
                 raise TypeError(msg)
         elif self.template_spec:
             template_body = self.template_spec
+        elif self.spark_application:
+            template_body = self.spark_application.to_dict()
         else:
             raise AirflowException("either application_file or template_spec should be passed")
         if "spark" not in template_body:

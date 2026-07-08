@@ -4313,6 +4313,7 @@ dependencies = [
     { name = "apache-airflow-providers-common-compat" },
     { name = "asgiref" },
     { name = "cryptography" },
+    { name = "kubeflow-spark-api" },
     { name = "kubernetes" },
     { name = "kubernetes-asyncio" },
     { name = "urllib3" },
@@ -4337,6 +4338,7 @@ requires-dist = [
     { name = "asgiref", marker = "python_full_version < '3.14'", specifier = ">=3.5.2" },
     { name = "asgiref", marker = "python_full_version >= '3.14'", specifier = ">=3.11.1" },
     { name = "cryptography", specifier = ">=44.0.3" },
+    { name = "kubeflow-spark-api", specifier = "==2.4.0" },
     { name = "kubernetes", specifier = ">=35.0.0,!=36.0.0,<37.0.0" },
     { name = "kubernetes-asyncio", specifier = ">=32.0.0,<37.0.0" },
     { name = "urllib3", specifier = ">=2.1.0,!=2.6.0" },
@@ -15189,11 +15191,22 @@ wheels = [
 ]
 
 [[package]]
-name = "kubernetes"
-version = "36.0.2"
+name = "kubeflow-spark-api"
+version = "2.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "aiohttp" },
+    { name = "pydantic" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ea/0d/31187d26ff0e36539b98aa4b269ee01b10f352c9e191eea3e6159925cb74/kubeflow_spark_api-2.4.0.tar.gz", hash = "sha256:cdd8e2c05babe2d9989dd67623c1ff52f4bdab1a59c8ac8eb6f54a2e8df5cc94", size = 203551, upload-time = "2026-02-27T02:19:29.341Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0a/18/9685647658f688f5e2b13a447c33bc278de138dbb37d2a68a6e9a4afb661/kubeflow_spark_api-2.4.0-py3-none-any.whl", hash = "sha256:c86989b74395afaf20f011d13bcb665584f2b2f1fc3289fdfa988092acab7f7c", size = 683038, upload-time = "2026-02-27T02:19:27.898Z" },
+]
+
+[[package]]
+name = "kubernetes"
+version = "35.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
     { name = "certifi" },
     { name = "durationpy" },
     { name = "python-dateutil" },
@@ -15204,9 +15217,9 @@ dependencies = [
     { name = "urllib3" },
     { name = "websocket-client" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2f/57/8b538af5076bc3372949d76f70ba3449bdfe52f9e6488170fa5d4f7cbe70/kubernetes-36.0.2.tar.gz", hash = "sha256:03551fcb49cae1f708f63624041e37403545b7aaed10cbf54e2b01a37a5438e3", size = 2336738, upload-time = "2026-06-01T18:20:30.785Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2c/8f/85bf51ad4150f64e8c665daf0d9dfe9787ae92005efb9a4d1cba592bd79d/kubernetes-35.0.0.tar.gz", hash = "sha256:3d00d344944239821458b9efd484d6df9f011da367ecb155dadf9513f05f09ee", size = 1094642, upload-time = "2026-01-16T01:05:27.76Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/46/2c/5c160dbdef7123f8cc97fd8ece7e0198627a426a2a49614845e9086feb8d/kubernetes-36.0.2-py2.py3-none-any.whl", hash = "sha256:faf9b5241b58de0c4a5069f2a0ffc8ac06fece7215156cd3d3ba081a78a858b6", size = 4617568, upload-time = "2026-06-01T18:20:28.737Z" },
+    { url = "https://files.pythonhosted.org/packages/0c/70/05b685ea2dffcb2adbf3cdcea5d8865b7bc66f67249084cf845012a0ff13/kubernetes-35.0.0-py2.py3-none-any.whl", hash = "sha256:39e2b33b46e5834ef6c3985ebfe2047ab39135d41de51ce7641a7ca5b372a13d", size = 2017602, upload-time = "2026-01-16T01:05:25.991Z" },
 ]
 
 [[package]]
@@ -20106,12 +20119,12 @@ wheels = [
 
 [[package]]
 name = "pyspark"
-version = "4.1.2"
+version = "4.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "py4j" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5e/71/4dd20c69332a2a4bf7ece8a655c9da98e4bd9b6bcea235349c1a00399d57/pyspark-4.1.2.tar.gz", hash = "sha256:fa5d6159f700d0990a07f4f62df1b7449401dccee9cd7d5d6df8957530841602", size = 455428043, upload-time = "2026-05-21T14:49:21.785Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ae/40/1414582f16c1d7b051c668c2e19c62d21a18bd181d944cb24f5ddbb2423f/pyspark-4.0.1.tar.gz", hash = "sha256:9d1f22d994f60369228397e3479003ffe2dd736ba79165003246ff7bd48e2c73", size = 434204896, upload-time = "2025-09-06T07:15:57.091Z" }
 
 [[package]]
 name = "pyspark-client"
